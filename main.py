@@ -1,17 +1,18 @@
 import asyncio
 import base64
 import datetime
+import logging
 import os.path
 import time
 
 import aiocoap
 import aiocoap.resource as resource
-import psycopg2
 from google.protobuf.json_format import MessageToDict
 
 from protobuf import proto_config_pb2
 from protobuf import proto_device_info_pb2
 from protobuf import proto_measurements_pb2
+
 
 # # Enter your database host, database user, database password and database name
 # DATABASE_HOST = 'localhost'
@@ -37,10 +38,11 @@ class Measurements(resource.Resource):
         super().__init__()
 
     async def render_post(self, request):
-        print('\n\n received request \n\n\n')
+
+        logging.info(f'received request for measurements')
         # Creating a dictionary from a received message.
         data = [MessageToDict(proto_measurements_pb2.ProtoMeasurements().FromString(request.payload))]
-        print(f'\n data = {data}\n')
+        logging.info(f'received payload data {data}')
         record = []
         changeAt = []
         # Set request_device_info to true
@@ -102,6 +104,7 @@ class Measurements(resource.Resource):
                 #     except (Exception, psycopg2.DatabaseError) as error:
                 #         print(error)
         # returning "ACK" and response payload to the sensor
+        logging.info(f'response payload {response_payload}')
         return aiocoap.Message(mtype=aiocoap.ACK, code=aiocoap.Code.CREATED,
                                token=request.token, payload=response_payload)
 
@@ -113,8 +116,10 @@ class DeviceInfo(resource.Resource):
         super().__init__()
 
     async def render_post(self, request):
+        logging.info(f'received post request for device info')
         # Creating a dictionary from a message received from a sensor
         data = [MessageToDict(proto_device_info_pb2.ProtoDeviceInfo().FromString(request.payload))]
+        logging.info(f'data {data}')
         # Create the file "Deviceinfo.txt" and save the date in this file
         if not os.path.isfile("Deviceinfo.txt"):
             file = open("Deviceinfo.txt", 'x')
@@ -134,8 +139,10 @@ class Configuration(resource.Resource):
         super().__init__()
 
     async def render_post(self, request):
+        logging.info(f'received post request for configuration')
         # Creating a dictionary from a message received from a sensor
         data = [MessageToDict(proto_config_pb2.ProtoConfig().FromString(request.payload))]
+        logging.info(f'data {data}')
         # Create the file "Configuration.txt" and save the date in this file
         if not os.path.isfile("Configuration.txt"):
             file = open("Configuration.txt", 'x')
@@ -155,6 +162,7 @@ class Time(resource.Resource):
         super().__init__()
 
     async def render_post(self, request):
+        logging.info(f'received request for time')
         time_stamp = int(time.time())
         time_stamp_hex = hex(time_stamp)
 
@@ -164,6 +172,8 @@ class Time(resource.Resource):
 
 
 async def main():
+    logging.basicConfig(filename='coap_server.log', encoding='utf-8', level=logging.DEBUG,
+                        format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
     # Resource tree creation
     root = resource.Site()
     # Set up “m” endpoint, which will be receiving measurements sent by Efento NB-IoT sensor using POST method
@@ -176,7 +186,7 @@ async def main():
     root.add_resource(["t"], Time())
 
     # Starting the application on set IP address and port.
-    print('listening to 5683')
+    logging.info('listening to 5683')
     await aiocoap.Context.create_server_context(root, ('0.0.0.0', 5683))
     # Getting the current event loop and create an asyncio.Future object attached to the event loop.
     await asyncio.get_running_loop().create_future()
