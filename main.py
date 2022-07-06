@@ -13,21 +13,21 @@ from protobuf import proto_config_pb2
 from protobuf import proto_device_info_pb2
 from protobuf import proto_measurements_pb2
 
-# Enter your database host, database user, database password and database name
-DATABASE_HOST = 'localhost'
-DATABASE_USER = 'riajulkashem'
-DATABASE_PASSWORD = 'password'
-DATABASE_NAME = 'iot_db'
-DATABASE_PORT = '5432'
-
-# Making the initial connection:
-conn = psycopg2.connect(
-    dbname=DATABASE_NAME,
-    user=DATABASE_USER,
-    host=DATABASE_HOST,
-    password=DATABASE_PASSWORD,
-    port=DATABASE_PORT
-)
+# # Enter your database host, database user, database password and database name
+# DATABASE_HOST = 'localhost'
+# DATABASE_USER = 'riajulkashem'
+# DATABASE_PASSWORD = 'password'
+# DATABASE_NAME = 'iot_db'
+# DATABASE_PORT = '5432'
+#
+# # Making the initial connection:
+# conn = psycopg2.connect(
+#     dbname=DATABASE_NAME,
+#     user=DATABASE_USER,
+#     host=DATABASE_HOST,
+#     password=DATABASE_PASSWORD,
+#     port=DATABASE_PORT
+# )
 
 
 # Measurements - Class used to handle Measurement messages sent by the sensor
@@ -92,15 +92,15 @@ class Measurements(resource.Resource):
                                             param['type'].replace("MEASUREMENT_TYPE_", ""),
                                             value)])
 
-                measurements = "INSERT INTO measurements(measured_at, serial_number, battery_ok, type, value) VALUES (%s, %s, %s, %s, %s)"
-                with conn.cursor() as cur:
-                    try:
-                        # inserting a list of sensor parameters and measurement to table in PostgresSQL
-                        cur.executemany(measurements, record)
-                        conn.commit()
-                        cur.close()
-                    except (Exception, psycopg2.DatabaseError) as error:
-                        print(error)
+                # measurements = "INSERT INTO measurements(measured_at, serial_number, battery_ok, type, value) VALUES (%s, %s, %s, %s, %s)"
+                # with conn.cursor() as cur:
+                #     try:
+                #         # inserting a list of sensor parameters and measurement to table in PostgresSQL
+                #         cur.executemany(measurements, record)
+                #         conn.commit()
+                #         cur.close()
+                #     except (Exception, psycopg2.DatabaseError) as error:
+                #         print(error)
         # returning "ACK" and response payload to the sensor
         return aiocoap.Message(mtype=aiocoap.ACK, code=aiocoap.Code.CREATED,
                                token=request.token, payload=response_payload)
