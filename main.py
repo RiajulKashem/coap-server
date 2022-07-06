@@ -172,7 +172,7 @@ class Time(resource.Resource):
 
 
 async def main():
-    logging.basicConfig(filename='coap_server.log', encoding='utf-8', level=logging.DEBUG,
+    logging.basicConfig(filename='coap_server.log', level=logging.DEBUG,
                         format='%(asctime)s:%(levelname)s:%(name)s:%(message)s')
     # Resource tree creation
     root = resource.Site()
